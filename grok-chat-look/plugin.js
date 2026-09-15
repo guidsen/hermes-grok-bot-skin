@@ -142,7 +142,7 @@ const SEARCH_INPUT = `input:is([aria-label='Search sessions'], [aria-label='Sear
    only submit button, so it needs no label either. */
 const ADD_BUTTON = `button:has(> i.codicon-add)`
 
-const PLUS_MASK = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 4.5v15M4.5 12h15' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E")`
+const PLUS_MASK = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 4.5v15M4.5 12h15' fill='none' stroke='black' stroke-width='2.8' stroke-linecap='round'/%3E%3C/svg%3E")`
 
 const MENU_SURFACES = [
   `[data-slot='dropdown-menu-content']`,
@@ -628,15 +628,24 @@ html[data-grok-chat-look='true'] [data-slot='composer-rich-input'] [data-ref-kin
   overflow-wrap: anywhere;
 }
 
-/* Heavier composer icons. Hermes draws them with the codicon icon font, which
-   has no stroke weight to raise, so thicken the glyph outline with a hairline
-   text stroke in its own color. Any stroked SVG icon gets a heavier stroke. */
+/* Larger, heavier composer icons. Most are codicon font glyphs sized by an
+   inline font-size, so the size needs !important; the font has no stroke weight
+   to raise, so a text stroke in the glyph's own color thickens the outline. The
+   voice buttons use stroked SVG icons, which are resized and get a heavier
+   stroke. Buttons that also hold text, like the model pill, keep their small
+   chevron. */
 html[data-grok-chat-look='true'] [data-slot='composer-surface'] button i.codicon {
-  -webkit-text-stroke: 0.4px currentColor;
+  font-size: 18px !important;
+  -webkit-text-stroke: 0.6px currentColor;
+}
+
+html[data-grok-chat-look='true'] [data-slot='composer-surface'] button:not(:has(span)) > svg {
+  width: 18px !important;
+  height: 18px !important;
 }
 
 html[data-grok-chat-look='true'] [data-slot='composer-surface'] button svg[stroke] {
-  stroke-width: 2.4;
+  stroke-width: 2.6;
 }
 
 /* Hermes gives the field a 2.375rem floor; let the controls and input set the
@@ -710,8 +719,8 @@ html[data-grok-chat-look='true'] [data-slot='composer-surface'] ${ADD_BUTTON}::b
   content: '';
   position: absolute;
   inset: 0;
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   margin: auto;
   background: currentColor;
   -webkit-mask: ${PLUS_MASK} center / contain no-repeat;

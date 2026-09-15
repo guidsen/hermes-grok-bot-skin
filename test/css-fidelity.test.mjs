@@ -336,6 +336,9 @@ test('the dark + button is #3B3B3B', async () => {
   assert.match(await rule(`${S}[data-hermes-theme='grok-chat'].dark`), /--grok-color-add-button: #3B3B3B/)
 })
 
-test('composer icons are drawn heavier', async () => {
-  assert.match(await rule(`${S} [data-slot='composer-surface'] button i.codicon`), /-webkit-text-stroke: 0\.4px currentColor/)
+test('composer icons are drawn larger and heavier', async () => {
+  const glyph = await rule(`${S} [data-slot='composer-surface'] button i.codicon`)
+  assert.match(glyph, /font-size: 18px !important/)
+  assert.match(glyph, /-webkit-text-stroke: 0\.6px currentColor/)
+  assert.match(await rule(`${S} [data-slot='composer-surface'] button:not(:has(span)) > svg`), /width: 18px !important/)
 })
