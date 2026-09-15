@@ -815,7 +815,7 @@ html[data-grok-chat-look='true'] ${PANE_TAB} .pane-tab-content > span:not(:last-
 
 html[data-grok-chat-look='true'] ${PANE_TAB} .pane-tab-content > span:not(:last-child):has(${LOUD_DOT}) {
   margin-left: 12px !important;
-  margin-right: 0 !important;
+  margin-right: 2px !important;
 }
 
 html[data-grok-chat-look='true'] ${PANE_TAB} .pane-tab-content > span:has(${LOUD_DOT}) + :where(span, button):last-child {

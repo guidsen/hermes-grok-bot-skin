@@ -396,3 +396,8 @@ test('tab close buttons get their width, a one-step inset and a matching label f
   assert.match(await rule(`${S} ${tab} > span:has(> button > i.codicon-close)`), /right: calc\(var\(--spacing, 0\.25rem\) \* 1\) !important/)
   assert.match(await rule(`${S} ${tab}[data-closeable]:hover > .pane-tab-content`), /mask-image: linear-gradient/)
 })
+
+test('a visible tab dot keeps 2px before its title', async () => {
+  const body = await rule(`${S} :is([data-slot='pane-tab'], [data-tree-tab]):not([data-vertical]) .pane-tab-content > span:not(:last-child):has(span[class~='rounded-full']:is([style*='background-color'], [role='status']))`)
+  assert.match(body, /margin-right: 2px !important/)
+})
