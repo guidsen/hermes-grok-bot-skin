@@ -383,3 +383,7 @@ test('conversation tabs match even when a context menu replaces their data-slot'
 test('panel header tab strips get 0.5rem inline padding', async () => {
   assert.match(await rule(`${S} [data-panel-header] [class~='group/pane-header']`), /padding-inline: 0\.5rem !important/)
 })
+
+test('the composer + cross is 17px', async () => {
+  assert.match(await rule(`${S} [data-slot='composer-surface'] button:has(> i.codicon-add)::before`), /width: 17px;\s*height: 17px/)
+})

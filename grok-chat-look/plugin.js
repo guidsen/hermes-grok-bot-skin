@@ -150,7 +150,7 @@ const SEARCH_INPUT = `input:is([aria-label='Search sessions'], [aria-label='Sear
    only submit button, so it needs no label either. */
 const ADD_BUTTON = `button:has(> i.codicon-add)`
 
-const PLUS_MASK = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 4.5v15M4.5 12h15' fill='none' stroke='black' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E")`
+const PLUS_MASK = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 4.5v15M4.5 12h15' fill='none' stroke='black' stroke-width='2.1' stroke-linecap='round'/%3E%3C/svg%3E")`
 
 const MENU_SURFACES = [
   `[data-slot='dropdown-menu-content']`,
@@ -734,8 +734,8 @@ html[data-grok-chat-look='true'] [data-slot='composer-surface'] ${ADD_BUTTON}::b
   content: '';
   position: absolute;
   inset: 0;
-  width: 14px;
-  height: 14px;
+  width: 17px;
+  height: 17px;
   margin: auto;
   background: currentColor;
   -webkit-mask: ${PLUS_MASK} center / contain no-repeat;
