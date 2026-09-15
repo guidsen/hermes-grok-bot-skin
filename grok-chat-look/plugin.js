@@ -830,6 +830,13 @@ html[data-grok-chat-look='true'] ${PANE_TAB} .pane-tab-content span {
   text-transform: none !important;
 }
 
+/* Inset the tab strip inside each panel header so the first pill does not sit
+   against the zone edge. Descendant rather than child: a zone menu may wrap
+   the strip. */
+html[data-grok-chat-look='true'] [data-panel-header] [class~='group/pane-header'] {
+  padding-inline: 0.5rem !important;
+}
+
 /* ------------------------------------------------------------------- popups */
 
 /* Every menu, submenu and popover gets the same 14px card. The effort submenu

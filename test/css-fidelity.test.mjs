@@ -379,3 +379,7 @@ test('conversation tabs match even when a context menu replaces their data-slot'
   const pill = parseRules(await css()).find(({ selectors }) => selectors[0].endsWith("[data-active='true']::before"))
   assert.ok(pill.selectors[0].includes(":is([data-slot='pane-tab'], [data-tree-tab])"))
 })
+
+test('panel header tab strips get 0.5rem inline padding', async () => {
+  assert.match(await rule(`${S} [data-panel-header] [class~='group/pane-header']`), /padding-inline: 0\.5rem !important/)
+})
