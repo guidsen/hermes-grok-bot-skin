@@ -142,8 +142,13 @@ const USER_ACTIONS = `[data-slot='aui_user-bubble-actions'] .composer-human-mess
    alone. */
 const PANE_TAB = `:is([data-slot='pane-tab'], [data-tree-tab]):not([data-vertical])`
 
-/* Icon-only composer buttons that are not in their on state. */
-const ICON_SVG_BUTTON = `[data-slot='composer-surface'] button:not(:has(span)):not([class*='text-primary'])`
+/* Icon-only ghost buttons in the composer: not a toggle in its on state
+   (text-primary) and not a solid filled button such as voice mode
+   (bg-foreground), whose icon is deliberately colored against its fill. */
+const ICON_SVG_BUTTON = `[data-slot='composer-surface'] button:not(:has(span)):not([class*='text-primary']):not([class*='bg-foreground'])`
+
+/* The voice mode button: the solid primary button that is not Send/Stop. */
+const VOICE_BUTTON = `[data-slot='composer-surface'] button[class*='bg-foreground']:not([type='submit'])`
 const ICON_SVG = `${ICON_SVG_BUTTON} > svg[stroke]`
 
 const SEARCH_INPUT = `input:is([aria-label='Search sessions'], [aria-label='Search bots and group chats'])`
@@ -693,6 +698,17 @@ html[data-grok-chat-look='true'] ${ICON_SVG_BUTTON}:is(:hover, :focus-visible) >
 
 html[data-grok-chat-look='true'] ${ICON_SVG_BUTTON}:disabled > svg[stroke] {
   opacity: 0.36;
+}
+
+/* In dark mode the voice mode button is a gray circle with a white icon, like
+   the + button, rather than Hermes' white circle. Send keeps its white fill. */
+html[data-grok-chat-look='true'][data-hermes-theme='grok-chat'].dark ${VOICE_BUTTON} {
+  background: var(--grok-color-add-button) !important;
+  color: var(--ui-base, var(--grok-color-text)) !important;
+}
+
+html[data-grok-chat-look='true'][data-hermes-theme='grok-chat'].dark ${VOICE_BUTTON}:hover {
+  background: color-mix(in srgb, var(--ui-base, var(--grok-color-text)) 8%, var(--grok-color-add-button)) !important;
 }
 
 /* Hermes gives the field a 2.375rem floor; let the controls and input set the

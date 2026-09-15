@@ -407,9 +407,15 @@ test('a visible tab dot keeps 2px before its title', async () => {
 })
 
 test('composer SVG icons use a solid stroke with element opacity', async () => {
-  const idle = await rule(`${S} [data-slot='composer-surface'] button:not(:has(span)):not([class*='text-primary']) > svg[stroke]`)
+  const idle = await rule(`${S} [data-slot='composer-surface'] button:not(:has(span)):not([class*='text-primary']):not([class*='bg-foreground']) > svg[stroke]`)
   assert.match(idle, /color: var\(--ui-base, currentColor\) !important/)
   assert.match(idle, /opacity: 0\.54/)
-  const hover = await rule(`${S} [data-slot='composer-surface'] button:not(:has(span)):not([class*='text-primary']):is(:hover, :focus-visible) > svg[stroke]`)
+  const hover = await rule(`${S} [data-slot='composer-surface'] button:not(:has(span)):not([class*='text-primary']):not([class*='bg-foreground']):is(:hover, :focus-visible) > svg[stroke]`)
   assert.match(hover, /opacity: 0\.94/)
+})
+
+test('the dark voice mode button is gray with a white icon and solid buttons skip icon opacity', async () => {
+  const voice = await rule(`${S}[data-hermes-theme='grok-chat'].dark [data-slot='composer-surface'] button[class*='bg-foreground']:not([type='submit'])`)
+  assert.match(voice, /background: var\(--grok-color-add-button\) !important/)
+  assert.match(voice, /color: var\(--ui-base/)
 })
