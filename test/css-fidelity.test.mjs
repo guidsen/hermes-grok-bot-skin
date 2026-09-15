@@ -348,7 +348,7 @@ test('the chat surface has 2rem of top padding', async () => {
 })
 
 test('pane tabs keep their geometry and gain a pill behind the active tab', async () => {
-  const tab = `[data-slot='pane-tab']:not([data-vertical])`
+  const tab = `:is([data-slot='pane-tab'], [data-tree-tab]):not([data-vertical])`
   const base = await rule(`${S} ${tab}`)
   assert.match(base, /border-left-width: 0 !important/)
   assert.match(base, /--pane-tab-active-accent: transparent/)
@@ -362,15 +362,20 @@ test('pane tabs keep their geometry and gain a pill behind the active tab', asyn
 })
 
 test('pane tab labels capitalize their first letter only', async () => {
-  const body = await rule(`${S} [data-slot='pane-tab']:not([data-vertical]) .pane-tab-content > :last-child > span::first-letter`)
+  const body = await rule(`${S} :is([data-slot='pane-tab'], [data-tree-tab]):not([data-vertical]) .pane-tab-content > :last-child > span::first-letter`)
   assert.match(body, /text-transform: uppercase/)
 })
 
 test('conversation tab dots follow the sidebar rules without padding the lead cell', async () => {
   const rules = parseRules(await css())
-  const tab = `${S} [data-slot='pane-tab']:not([data-vertical]) .pane-tab-content`
+  const tab = `${S} :is([data-slot='pane-tab'], [data-tree-tab]):not([data-vertical]) .pane-tab-content`
   assert.ok(rules.some(({ selectors }) => selectors[0] === `${tab} > :where(span, button):last-child`), 'label padding must target only the last child')
   assert.ok(!rules.some(({ selectors }) => selectors[0] === `${tab} > :where(span, button)`), 'the lead cell must not get label padding')
   const hidden = rules.find(({ selectors }) => selectors[0].startsWith(`${tab} > span:not(:last-child) span[class~='rounded-full']`))
   assert.match(hidden.body, /display: none/)
+})
+
+test('conversation tabs match even when a context menu replaces their data-slot', async () => {
+  const pill = parseRules(await css()).find(({ selectors }) => selectors[0].endsWith("[data-active='true']::before"))
+  assert.ok(pill.selectors[0].includes(":is([data-slot='pane-tab'], [data-tree-tab])"))
 })

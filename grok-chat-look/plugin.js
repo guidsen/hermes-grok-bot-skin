@@ -135,8 +135,12 @@ const SECTION_LABEL = `span:has(> span.dither[aria-hidden='true'] + span[class~=
 const USER_ACTIONS = `[data-slot='aui_user-bubble-actions'] .composer-human-message ~ div[class~='absolute'][class~='bottom-2']`
 
 /* Horizontal pane tabs (Sessions/Bots/Terminal, session tabs above the chat).
-   Collapsed side rails render vertical tabs and are left alone. */
-const PANE_TAB = `[data-slot='pane-tab']:not([data-vertical])`
+   A conversation tab is wrapped in a right-click menu whose trigger passes its
+   own data-slot="context-menu-trigger" onto the tab, replacing "pane-tab". The
+   tab strip also stamps every tab with data-tree-tab, which nothing overrides,
+   so match either. Collapsed side rails render vertical tabs and are left
+   alone. */
+const PANE_TAB = `:is([data-slot='pane-tab'], [data-tree-tab]):not([data-vertical])`
 
 const SEARCH_INPUT = `input:is([aria-label='Search sessions'], [aria-label='Search bots and group chats'])`
 
