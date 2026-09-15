@@ -346,3 +346,17 @@ test('composer icons are drawn larger and heavier', async () => {
 test('the chat surface has 2rem of top padding', async () => {
   assert.match(await rule(`${S} [data-chat-surface]`), /padding-top: 2rem !important/)
 })
+
+test('pane tabs keep their geometry and gain a pill behind the active tab', async () => {
+  const tab = `[data-slot='pane-tab']:not([data-vertical])`
+  const base = await rule(`${S} ${tab}`)
+  assert.match(base, /border-left-width: 0 !important/)
+  assert.match(base, /--pane-tab-active-accent: transparent/)
+  assert.doesNotMatch(base, /(^|\s)(height|width|margin[a-z-]*):/, 'the tab box itself must not change size or position')
+
+  const pill = await rule(`${S} ${tab}[data-active='true']::before`)
+  assert.match(pill, /border-radius: 9999px/)
+  assert.match(pill, /pointer-events: none/)
+
+  assert.match(await rule(`${S} ${tab} .pane-tab-content span`), /text-transform: none !important/)
+})

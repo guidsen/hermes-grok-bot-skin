@@ -134,6 +134,10 @@ const SECTION_LABEL = `span:has(> span.dither[aria-hidden='true'] + span[class~=
    bubble's corner. */
 const USER_ACTIONS = `[data-slot='aui_user-bubble-actions'] .composer-human-message ~ div[class~='absolute'][class~='bottom-2']`
 
+/* Horizontal pane tabs (Sessions/Bots/Terminal, session tabs above the chat).
+   Collapsed side rails render vertical tabs and are left alone. */
+const PANE_TAB = `[data-slot='pane-tab']:not([data-vertical])`
+
 const SEARCH_INPUT = `input:is([aria-label='Search sessions'], [aria-label='Search bots and group chats'])`
 
 /* The composer's + is found by its icon, not its aria-label. Hermes' label is
@@ -219,6 +223,7 @@ html[data-grok-chat-look='true'] {
   --grok-color-user-pill-text: var(--grok-color-text);
   --grok-color-composer: var(--grok-color-elevated);
   --grok-color-add-button: color-mix(in srgb, var(--grok-color-text) 4%, var(--grok-color-composer));
+  --grok-color-tab-active: color-mix(in srgb, var(--grok-color-text) 9%, var(--ui-sidebar-surface-background));
   --grok-color-hover-soft: color-mix(in srgb, var(--grok-color-text) 6%, transparent);
   --grok-color-row-hover: color-mix(in srgb, var(--grok-color-text) 5%, var(--grok-color-sidebar));
   --grok-color-row-active: color-mix(in srgb, var(--grok-color-text) 8%, var(--grok-color-sidebar));
@@ -746,6 +751,49 @@ html[data-grok-chat-look='true'] [data-slot='composer-surface'] button[type='sub
   width: 26px !important;
   height: 26px !important;
   border-radius: 9999px !important;
+}
+
+/* ---------------------------------------------------------------- pane tabs */
+
+/* Hermes' tabs are full-height cells with tiny spaced uppercase labels, divider
+   lines and a primary-color underline on the active tab. Keep every tab's
+   geometry exactly as it is, so clicking, dragging, dropping between zones and
+   the titlebar drag regions behave the same, and only change the paint: no
+   dividers or underline, sentence-case labels, and a soft pill drawn behind
+   the active tab. The pill is a pseudo-element outside .pane-tab-content, so
+   the close button's label mask never fades it. */
+html[data-grok-chat-look='true'] ${PANE_TAB} {
+  --pane-tab-active-accent: transparent;
+  --pane-tab-active-bg: transparent;
+  border-left-width: 0 !important;
+  box-shadow: none !important;
+  isolation: isolate;
+}
+
+html[data-grok-chat-look='true'] ${PANE_TAB}[data-active='true']::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  right: 2px;
+  left: 2px;
+  height: 26px;
+  margin-top: -13px;
+  border-radius: 9999px;
+  background: var(--grok-color-tab-active);
+  pointer-events: none;
+}
+
+html[data-grok-chat-look='true'] ${PANE_TAB} .pane-tab-content > :where(span, button) {
+  padding-inline: 12px !important;
+}
+
+html[data-grok-chat-look='true'] ${PANE_TAB} .pane-tab-content span {
+  font-family: ${SYSTEM_FONT} !important;
+  font-size: var(--grok-font-meta) !important;
+  font-weight: 500 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
 }
 
 /* ------------------------------------------------------------------- popups */
