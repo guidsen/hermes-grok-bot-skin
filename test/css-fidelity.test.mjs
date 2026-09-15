@@ -342,3 +342,7 @@ test('composer icons are drawn larger and heavier', async () => {
   assert.match(glyph, /-webkit-text-stroke: 0\.6px currentColor/)
   assert.match(await rule(`${S} [data-slot='composer-surface'] button:not(:has(span)) > svg`), /width: 18px !important/)
 })
+
+test('the chat surface has 2rem of top padding', async () => {
+  assert.match(await rule(`${S} [data-chat-surface]`), /padding-top: 2rem !important/)
+})

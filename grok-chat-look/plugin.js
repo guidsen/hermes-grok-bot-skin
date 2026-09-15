@@ -281,6 +281,12 @@ html[data-grok-chat-look='true'] [contenteditable='true'] {
 
 /* ---------------------------------------------------------------- transcript */
 
+/* Breathing room between the window chrome and the conversation. The surface is
+   a flex column, so its children shrink to fit rather than overflow. */
+html[data-grok-chat-look='true'] [data-chat-surface] {
+  padding-top: 2rem !important;
+}
+
 html[data-grok-chat-look='true'] [data-slot='aui_thread-viewport'],
 html[data-grok-chat-look='true'] [data-slot='aui_thread-content'] {
   background: var(--grok-color-chat) !important;
