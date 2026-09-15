@@ -151,6 +151,11 @@ const ICON_SVG_BUTTON = `[data-slot='composer-surface'] button:not(:has(span)):n
 const VOICE_BUTTON = `[data-slot='composer-surface'] button[class*='bg-foreground']:not([type='submit'])`
 const ICON_SVG = `${ICON_SVG_BUTTON} > svg[stroke]`
 
+/* A tab's lead cell (before the label) holding only a dot the skin hides, and
+   one holding anything visible. */
+const EMPTY_TAB_LEAD = `span:not(:last-child):has(${QUIET_DOT}):not(:has(${LOUD_DOT}))`
+const FILLED_TAB_LEAD = `span:not(:last-child):is(:not(:has(${QUIET_DOT})), :has(${LOUD_DOT}))`
+
 const SEARCH_INPUT = `input:is([aria-label='Search sessions'], [aria-label='Search bots and group chats'])`
 
 /* The composer's + is found by its icon, not its aria-label. Hermes' label is
@@ -859,16 +864,20 @@ html[data-grok-chat-look='true'] ${PANE_TAB} .pane-tab-content > span:not(:last-
   display: none !important;
 }
 
-html[data-grok-chat-look='true'] ${PANE_TAB} .pane-tab-content > span:not(:last-child):not(:has(${LOUD_DOT})) {
+/* A lead cell is empty only when all it holds is a dot the skin hid. Collapse
+   that one so the title lines up with other tabs. Any other lead, a visible
+   dot or an icon such as a browser tab's globe or favicon, keeps room on its
+   left and sits close to the title. */
+html[data-grok-chat-look='true'] ${PANE_TAB} .pane-tab-content > ${EMPTY_TAB_LEAD} {
   margin-inline: 0 !important;
 }
 
-html[data-grok-chat-look='true'] ${PANE_TAB} .pane-tab-content > span:not(:last-child):has(${LOUD_DOT}) {
+html[data-grok-chat-look='true'] ${PANE_TAB} .pane-tab-content > ${FILLED_TAB_LEAD} {
   margin-left: 12px !important;
   margin-right: 2px !important;
 }
 
-html[data-grok-chat-look='true'] ${PANE_TAB} .pane-tab-content > span:has(${LOUD_DOT}) + :where(span, button):last-child {
+html[data-grok-chat-look='true'] ${PANE_TAB} .pane-tab-content > ${FILLED_TAB_LEAD} + :where(span, button):last-child {
   padding-left: 3px !important;
 }
 

@@ -401,10 +401,6 @@ test('tab close buttons get their width, a one-step inset and a matching label f
   assert.match(await rule(`${S} ${tab}[data-closeable]:hover > .pane-tab-content`), /mask-image: linear-gradient/)
 })
 
-test('a visible tab dot keeps 2px before its title', async () => {
-  const body = await rule(`${S} :is([data-slot='pane-tab'], [data-tree-tab]):not([data-vertical]) .pane-tab-content > span:not(:last-child):has(span[class~='rounded-full']:is([style*='background-color'], [role='status']))`)
-  assert.match(body, /margin-right: 2px !important/)
-})
 
 test('composer SVG icons use a solid stroke with element opacity', async () => {
   const idle = await rule(`${S} [data-slot='composer-surface'] button:not(:has(span)):not([class*='text-primary']):not([class*='bg-foreground']) > svg[stroke]`)
@@ -421,4 +417,15 @@ test('the dark voice mode button is near-white with a near-black icon', async ()
   const dark = await rule(`${S}[data-hermes-theme='grok-chat'].dark`)
   assert.match(dark, /--grok-color-voice-button: #FAFAFA/)
   assert.match(dark, /--grok-color-voice-icon: #141414/)
+})
+
+test('tab lead cells collapse only when empty, and icons keep their spacing', async () => {
+  const rules = parseRules(await css())
+  const tab = `${S} :is([data-slot='pane-tab'], [data-tree-tab]):not([data-vertical]) .pane-tab-content > span:not(:last-child)`
+  const empty = rules.find(({ selectors }) => selectors[0].startsWith(tab) && /margin-inline: 0/.test(selectors[0] ? '' : '') || (selectors[0].startsWith(tab) && selectors[0].includes(':has(span[class~=') && selectors[0].includes(':not(:has(span[class~=')))
+  assert.ok(empty, 'expected an empty-lead rule')
+  assert.match(empty.body, /margin-inline: 0 !important/)
+  const filled = rules.find(({ selectors }) => selectors[0].startsWith(tab) && selectors[0].includes(':is(:not(:has('))
+  assert.ok(filled, 'expected a filled-lead rule covering icons as well as visible dots')
+  assert.match(filled.body, /margin-left: 12px !important;\s*margin-right: 2px !important/)
 })
