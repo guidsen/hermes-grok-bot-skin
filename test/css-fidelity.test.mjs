@@ -19,7 +19,7 @@ test('colors resolve through tokens; only semantic status colors are literal', a
     for (const declaration of body.split(';')) {
       if (!/#[0-9a-fA-F]{3,8}\b/.test(declaration)) continue
       if (/url\("data:/.test(declaration)) continue
-      assert.match(declaration.trim(), /^--grok-(status-|link:)/, `hardcoded color outside a status or link token: ${declaration.trim()}`)
+      assert.match(declaration.trim(), /^--grok-(status-|link:|color-add-button:)/, `hardcoded color outside an allowed token: ${declaration.trim()}`)
     }
   }
 })
@@ -191,7 +191,7 @@ test('rounded utilities are scaled up app-wide', async () => {
 
 test('the + and its grid area match the primary control size', async () => {
   const size = /width: var\(--composer-control-primary-size, var\(--composer-control-size\)\) !important;\s*height: var\(--composer-control-primary-size, var\(--composer-control-size\)\)/
-  assert.match(await rule(`${S} [data-slot='composer-surface'] button[aria-label='Add context']`), size)
+  assert.match(await rule(`${S} [data-slot='composer-surface'] button:has(> i.codicon-add)`), size)
   assert.match(await rule(`${S} [data-slot='composer-surface'] [class*='[grid-area:menu]']`), size)
   assert.match(await rule(`${S} [data-slot='composer-surface'] [class*='[grid-area:menu]']`), /--tw-translate-y: 0 !important/)
   assert.match(await rule(`${S} [data-slot='composer-surface'] [class*='[grid-area:input]']`), /margin-left: 0\.2rem/)
@@ -323,4 +323,19 @@ test('dark prompt pills use light text', async () => {
 test('composer links show the full URL in link blue without the chip icon', async () => {
   assert.match(await rule(`${S} [data-slot='composer-rich-input'] [data-ref-kind='url']`), /font-size: 0 !important/)
   assert.match(await rule(`${S} [data-slot='composer-rich-input'] [data-ref-kind='url']::after`), /content: attr\(data-ref-id\)/)
+})
+
+test('composer buttons are matched without translatable labels', async () => {
+  const source = await css()
+  assert.doesNotMatch(source, /aria-label='(Add context|Send|Stop)'/)
+  assert.match(source, /button:has\(> i\.codicon-add\)/)
+  assert.match(source, /\[data-slot='composer-surface'\] button\[type='submit'\]/)
+})
+
+test('the dark + button is #3B3B3B', async () => {
+  assert.match(await rule(`${S}[data-hermes-theme='grok-chat'].dark`), /--grok-color-add-button: #3B3B3B/)
+})
+
+test('composer icons are drawn heavier', async () => {
+  assert.match(await rule(`${S} [data-slot='composer-surface'] button i.codicon`), /-webkit-text-stroke: 0\.4px currentColor/)
 })

@@ -136,7 +136,13 @@ const USER_ACTIONS = `[data-slot='aui_user-bubble-actions'] .composer-human-mess
 
 const SEARCH_INPUT = `input:is([aria-label='Search sessions'], [aria-label='Search bots and group chats'])`
 
-const PLUS_MASK = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 4.5v15M4.5 12h15' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E")`
+/* The composer's + is found by its icon, not its aria-label. Hermes' label is
+   plain text that can be translated; the codicon name is an internal id that
+   stays the same in every language. The Send/Stop button is the composer's
+   only submit button, so it needs no label either. */
+const ADD_BUTTON = `button:has(> i.codicon-add)`
+
+const PLUS_MASK = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 4.5v15M4.5 12h15' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round'/%3E%3C/svg%3E")`
 
 const MENU_SURFACES = [
   `[data-slot='dropdown-menu-content']`,
@@ -212,6 +218,7 @@ html[data-grok-chat-look='true'] {
   --grok-color-user-pill: var(--dt-user-bubble);
   --grok-color-user-pill-text: var(--grok-color-text);
   --grok-color-composer: var(--grok-color-elevated);
+  --grok-color-add-button: color-mix(in srgb, var(--grok-color-text) 4%, var(--grok-color-composer));
   --grok-color-hover-soft: color-mix(in srgb, var(--grok-color-text) 6%, transparent);
   --grok-color-row-hover: color-mix(in srgb, var(--grok-color-text) 5%, var(--grok-color-sidebar));
   --grok-color-row-active: color-mix(in srgb, var(--grok-color-text) 8%, var(--grok-color-sidebar));
@@ -246,6 +253,7 @@ html[data-grok-chat-look='true'][data-hermes-theme='grok-chat'] {
    white one, so the text follows the foreground instead of primaryForeground. */
 html[data-grok-chat-look='true'][data-hermes-theme='grok-chat'].dark {
   --grok-color-user-pill-text: var(--theme-foreground, var(--grok-color-text));
+  --grok-color-add-button: #3B3B3B;
 }
 
 html[data-grok-chat-look='true'][data-hermes-theme='grok-chat']:not([data-hermes-glass]) {
@@ -620,6 +628,17 @@ html[data-grok-chat-look='true'] [data-slot='composer-rich-input'] [data-ref-kin
   overflow-wrap: anywhere;
 }
 
+/* Heavier composer icons. Hermes draws them with the codicon icon font, which
+   has no stroke weight to raise, so thicken the glyph outline with a hairline
+   text stroke in its own color. Any stroked SVG icon gets a heavier stroke. */
+html[data-grok-chat-look='true'] [data-slot='composer-surface'] button i.codicon {
+  -webkit-text-stroke: 0.4px currentColor;
+}
+
+html[data-grok-chat-look='true'] [data-slot='composer-surface'] button svg[stroke] {
+  stroke-width: 2.4;
+}
+
 /* Hermes gives the field a 2.375rem floor; let the controls and input set the
    height instead. */
 html[data-grok-chat-look='true'] [data-slot='composer-fade'] {
@@ -649,13 +668,13 @@ html[data-grok-chat-look='true'] [data-slot='composer-surface'] [data-slot='comp
 
 /* The + sits in the menu grid area. Size it like the send button so both ends
    of the field match. */
-html[data-grok-chat-look='true'] [data-slot='composer-surface'] button[aria-label='Add context'] {
+html[data-grok-chat-look='true'] [data-slot='composer-surface'] ${ADD_BUTTON} {
   position: relative !important;
   width: var(--composer-control-primary-size, var(--composer-control-size)) !important;
   height: var(--composer-control-primary-size, var(--composer-control-size)) !important;
   border: 1px solid color-mix(in srgb, var(--grok-color-text) 12%, transparent) !important;
   border-radius: 9999px !important;
-  background: color-mix(in srgb, var(--grok-color-text) 4%, var(--grok-color-composer)) !important;
+  background: var(--grok-color-add-button) !important;
   color: var(--grok-color-text-secondary) !important;
 }
 
@@ -678,16 +697,16 @@ html[data-grok-chat-look='true'] [data-slot='composer-surface'] [class*='"input_
   padding-left: calc(var(--spacing, 0.25rem) * 0.8) !important;
 }
 
-html[data-grok-chat-look='true'] [data-slot='composer-surface'] button[aria-label='Add context']:hover {
+html[data-grok-chat-look='true'] [data-slot='composer-surface'] ${ADD_BUTTON}:hover {
   background: color-mix(in srgb, var(--grok-color-text) 8%, var(--grok-color-composer)) !important;
   color: var(--grok-color-text) !important;
 }
 
-html[data-grok-chat-look='true'] [data-slot='composer-surface'] button[aria-label='Add context'] > * {
+html[data-grok-chat-look='true'] [data-slot='composer-surface'] ${ADD_BUTTON} > * {
   visibility: hidden !important;
 }
 
-html[data-grok-chat-look='true'] [data-slot='composer-surface'] button[aria-label='Add context']::before {
+html[data-grok-chat-look='true'] [data-slot='composer-surface'] ${ADD_BUTTON}::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -708,7 +727,7 @@ html[data-grok-chat-look='true'] [data-slot='composer-surface'] :is(button[aria-
   background: var(--grok-color-hover-soft) !important;
 }
 
-html[data-grok-chat-look='true'] [data-slot='composer-surface'] :is(button[aria-label='Send'], button[aria-label='Stop']) {
+html[data-grok-chat-look='true'] [data-slot='composer-surface'] button[type='submit'] {
   width: 26px !important;
   height: 26px !important;
   border-radius: 9999px !important;
