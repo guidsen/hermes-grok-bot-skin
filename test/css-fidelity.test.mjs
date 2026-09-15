@@ -345,8 +345,12 @@ test('composer icons are drawn larger and heavier', async () => {
   assert.match(await rule(`${S} [data-slot='composer-surface'] button:not(:has(span)) > svg`), /width: 18px !important/)
 })
 
-test('the chat surface has 2rem of top padding', async () => {
-  assert.match(await rule(`${S} [data-chat-surface]`), /padding-top: 2rem !important/)
+test('the thread leaves 0.8rem above the first message without touching the surface', async () => {
+  const source = await css()
+  assert.ok(!parseRules(source).some(({ selectors }) => selectors.includes(`${S} [data-chat-surface]`)))
+  const spacer = await rule(`${S} [data-slot='aui_thread-content']:has([data-slot='aui_message-group'])::before`)
+  assert.match(spacer, /height: 0\.8rem/)
+  assert.match(spacer, /flex-shrink: 0/)
 })
 
 test('pane tabs keep their geometry and gain a pill behind the active tab', async () => {
@@ -400,4 +404,12 @@ test('tab close buttons get their width, a one-step inset and a matching label f
 test('a visible tab dot keeps 2px before its title', async () => {
   const body = await rule(`${S} :is([data-slot='pane-tab'], [data-tree-tab]):not([data-vertical]) .pane-tab-content > span:not(:last-child):has(span[class~='rounded-full']:is([style*='background-color'], [role='status']))`)
   assert.match(body, /margin-right: 2px !important/)
+})
+
+test('composer SVG icons use a solid stroke with element opacity', async () => {
+  const idle = await rule(`${S} [data-slot='composer-surface'] button:not(:has(span)):not([class*='text-primary']) > svg[stroke]`)
+  assert.match(idle, /color: var\(--ui-base, currentColor\) !important/)
+  assert.match(idle, /opacity: 0\.54/)
+  const hover = await rule(`${S} [data-slot='composer-surface'] button:not(:has(span)):not([class*='text-primary']):is(:hover, :focus-visible) > svg[stroke]`)
+  assert.match(hover, /opacity: 0\.94/)
 })

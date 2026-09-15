@@ -142,6 +142,10 @@ const USER_ACTIONS = `[data-slot='aui_user-bubble-actions'] .composer-human-mess
    alone. */
 const PANE_TAB = `:is([data-slot='pane-tab'], [data-tree-tab]):not([data-vertical])`
 
+/* Icon-only composer buttons that are not in their on state. */
+const ICON_SVG_BUTTON = `[data-slot='composer-surface'] button:not(:has(span)):not([class*='text-primary'])`
+const ICON_SVG = `${ICON_SVG_BUTTON} > svg[stroke]`
+
 const SEARCH_INPUT = `input:is([aria-label='Search sessions'], [aria-label='Search bots and group chats'])`
 
 /* The composer's + is found by its icon, not its aria-label. Hermes' label is
@@ -290,15 +294,21 @@ html[data-grok-chat-look='true'] [contenteditable='true'] {
 
 /* ---------------------------------------------------------------- transcript */
 
-/* Breathing room between the window chrome and the conversation. The surface is
-   a flex column, so its children shrink to fit rather than overflow. */
-html[data-grok-chat-look='true'] [data-chat-surface] {
-  padding-top: 2rem !important;
-}
-
 html[data-grok-chat-look='true'] [data-slot='aui_thread-viewport'],
 html[data-grok-chat-look='true'] [data-slot='aui_thread-content'] {
   background: var(--grok-color-chat) !important;
+}
+
+/* A little space above the first message. Hermes already pads the thread to
+   clear the titlebar, with a different amount in secondary windows, so add a
+   spacer before the first item instead of overriding that padding. Only while
+   the thread has messages: the empty state reuses this slot as a two-row grid,
+   where an extra item would take a row. */
+html[data-grok-chat-look='true'] [data-slot='aui_thread-content']:has([data-slot='aui_message-group'])::before {
+  content: '';
+  display: block;
+  flex-shrink: 0;
+  height: 0.8rem;
 }
 
 html[data-grok-chat-look='true'] [data-slot='aui_assistant-message-root'],
@@ -661,6 +671,28 @@ html[data-grok-chat-look='true'] [data-slot='composer-surface'] button:not(:has(
 
 html[data-grok-chat-look='true'] [data-slot='composer-surface'] button svg[stroke] {
   stroke-width: 2.3;
+}
+
+/* Hermes colors these icon buttons with a translucent tertiary color
+   (the foreground at 54%). A Tabler icon is several strokes that meet and
+   cross, and with a translucent stroke every overlap paints twice, leaving
+   brighter spots at joins and crossings. Draw the strokes in the same
+   foreground at full strength and apply the transparency to the whole icon
+   with opacity, so overlaps can't build up: 54% at rest, 94% on hover like
+   Hermes' hover text. Toggles that are on use Hermes' solid primary color and
+   are left alone. */
+html[data-grok-chat-look='true'] ${ICON_SVG} {
+  color: var(--ui-base, currentColor) !important;
+  opacity: 0.54;
+  transition: opacity 120ms ease;
+}
+
+html[data-grok-chat-look='true'] ${ICON_SVG_BUTTON}:is(:hover, :focus-visible) > svg[stroke] {
+  opacity: 0.94;
+}
+
+html[data-grok-chat-look='true'] ${ICON_SVG_BUTTON}:disabled > svg[stroke] {
+  opacity: 0.36;
 }
 
 /* Hermes gives the field a 2.375rem floor; let the controls and input set the
