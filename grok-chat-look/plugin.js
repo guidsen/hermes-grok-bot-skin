@@ -830,6 +830,34 @@ html[data-grok-chat-look='true'] ${PANE_TAB} .pane-tab-content span {
   text-transform: none !important;
 }
 
+/* Close button on closeable tabs. Hermes sizes it and fades the label under
+   it with [data-slot='pane-tab'][data-closeable], which conversation tabs miss
+   because their menu trigger replaced that data-slot, so their ✕ had no width
+   and sat flush against the edge. Restore the width for every closeable tab,
+   move the ✕ in by one spacing step, and extend the label fade by the same
+   amount so no text shows beside the button. The wrapper is found by the
+   close icon it holds, not by its utility classes. */
+html[data-grok-chat-look='true'] ${PANE_TAB}[data-closeable] {
+  --pane-tab-close-width: 1.5rem;
+}
+
+html[data-grok-chat-look='true'] ${PANE_TAB} > span:has(> button > i.codicon-close) {
+  right: calc(var(--spacing, 0.25rem) * 1) !important;
+}
+
+html[data-grok-chat-look='true'] ${PANE_TAB}[data-closeable]:hover > .pane-tab-content {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    #000 calc(100% - var(--pane-tab-close-width) - var(--spacing, 0.25rem) - 1rem),
+    transparent calc(100% - var(--pane-tab-close-width) - var(--spacing, 0.25rem))
+  ) !important;
+  mask-image: linear-gradient(
+    to right,
+    #000 calc(100% - var(--pane-tab-close-width) - var(--spacing, 0.25rem) - 1rem),
+    transparent calc(100% - var(--pane-tab-close-width) - var(--spacing, 0.25rem))
+  ) !important;
+}
+
 /* Inset the tab strip inside each panel header so the first pill does not sit
    against the zone edge. Descendant rather than child: a zone menu may wrap
    the strip. */

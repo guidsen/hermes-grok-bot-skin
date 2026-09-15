@@ -19,6 +19,8 @@ test('colors resolve through tokens; only semantic status colors are literal', a
     for (const declaration of body.split(';')) {
       if (!/#[0-9a-fA-F]{3,8}\b/.test(declaration)) continue
       if (/url\("data:/.test(declaration)) continue
+      // Mask gradients use black purely as an alpha channel, not as a color.
+      if (/^\s*(-webkit-)?mask(-image)?:/.test(declaration)) continue
       assert.match(declaration.trim(), /^--grok-(status-|link:|color-add-button:)/, `hardcoded color outside an allowed token: ${declaration.trim()}`)
     }
   }
@@ -386,4 +388,11 @@ test('panel header tab strips get 0.5rem inline padding', async () => {
 
 test('the composer + cross is 17px', async () => {
   assert.match(await rule(`${S} [data-slot='composer-surface'] button:has(> i.codicon-add)::before`), /width: 17px;\s*height: 17px/)
+})
+
+test('tab close buttons get their width, a one-step inset and a matching label fade', async () => {
+  const tab = ":is([data-slot='pane-tab'], [data-tree-tab]):not([data-vertical])"
+  assert.match(await rule(`${S} ${tab}[data-closeable]`), /--pane-tab-close-width: 1\.5rem/)
+  assert.match(await rule(`${S} ${tab} > span:has(> button > i.codicon-close)`), /right: calc\(var\(--spacing, 0\.25rem\) \* 1\) !important/)
+  assert.match(await rule(`${S} ${tab}[data-closeable]:hover > .pane-tab-content`), /mask-image: linear-gradient/)
 })
