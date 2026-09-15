@@ -339,7 +339,7 @@ test('the dark + button is #3B3B3B', async () => {
 test('composer icons are drawn larger and heavier', async () => {
   const glyph = await rule(`${S} [data-slot='composer-surface'] button i.codicon`)
   assert.match(glyph, /font-size: 18px !important/)
-  assert.match(glyph, /-webkit-text-stroke: 0\.6px currentColor/)
+  assert.match(glyph, /-webkit-text-stroke: 0\.45px currentColor/)
   assert.match(await rule(`${S} [data-slot='composer-surface'] button:not(:has(span)) > svg`), /width: 18px !important/)
 })
 
