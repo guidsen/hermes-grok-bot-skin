@@ -19,7 +19,9 @@ test('colors resolve through tokens; only semantic status colors are literal', a
     for (const declaration of body.split(';')) {
       if (!/#[0-9a-fA-F]{3,8}\b/.test(declaration)) continue
       if (/url\("data:/.test(declaration)) continue
-      assert.match(declaration.trim(), /^--grok-status-/, `hardcoded color outside a status token: ${declaration.trim()}`)
+      // Mask gradients use black purely as an alpha channel, not as a color.
+      if (/^\s*(-webkit-)?mask(-image)?:/.test(declaration)) continue
+      assert.match(declaration.trim(), /^--grok-(status-|link:|color-add-button:|color-voice-(button|icon):)/, `hardcoded color outside an allowed token: ${declaration.trim()}`)
     }
   }
 })
@@ -191,7 +193,7 @@ test('rounded utilities are scaled up app-wide', async () => {
 
 test('the + and its grid area match the primary control size', async () => {
   const size = /width: var\(--composer-control-primary-size, var\(--composer-control-size\)\) !important;\s*height: var\(--composer-control-primary-size, var\(--composer-control-size\)\)/
-  assert.match(await rule(`${S} [data-slot='composer-surface'] button[aria-label='Add context']`), size)
+  assert.match(await rule(`${S} [data-slot='composer-surface'] button:has(> i.codicon-add)`), size)
   assert.match(await rule(`${S} [data-slot='composer-surface'] [class*='[grid-area:menu]']`), size)
   assert.match(await rule(`${S} [data-slot='composer-surface'] [class*='[grid-area:menu]']`), /--tw-translate-y: 0 !important/)
   assert.match(await rule(`${S} [data-slot='composer-surface'] [class*='[grid-area:input]']`), /margin-left: 0\.2rem/)
@@ -314,4 +316,116 @@ test('tool blocks use a 0.7rem corner', async () => {
 
 test('the prompt text wrapper has no minimum height', async () => {
   assert.match(await rule(`${S} div[class~='min-h-[1.25rem]']:has(> [data-slot='aui_user-message-text'])`), /min-height: 0 !important/)
+})
+
+test('dark prompt pills use light text', async () => {
+  assert.match(await rule(`${S}[data-hermes-theme='grok-chat'].dark`), /--grok-color-user-pill-text: var\(--theme-foreground/)
+})
+
+test('composer links show the full URL in link blue without the chip icon', async () => {
+  assert.match(await rule(`${S} [data-slot='composer-rich-input'] [data-ref-kind='url']`), /font-size: 0 !important/)
+  assert.match(await rule(`${S} [data-slot='composer-rich-input'] [data-ref-kind='url']::after`), /content: attr\(data-ref-id\)/)
+})
+
+test('composer buttons are matched without translatable labels', async () => {
+  const source = await css()
+  assert.doesNotMatch(source, /aria-label='(Add context|Send|Stop)'/)
+  assert.match(source, /button:has\(> i\.codicon-add\)/)
+  assert.match(source, /\[data-slot='composer-surface'\] button\[type='submit'\]/)
+})
+
+test('the dark + button is #3B3B3B', async () => {
+  assert.match(await rule(`${S}[data-hermes-theme='grok-chat'].dark`), /--grok-color-add-button: #3B3B3B/)
+})
+
+test('composer icons are drawn larger and heavier', async () => {
+  const glyph = await rule(`${S} [data-slot='composer-surface'] button i.codicon`)
+  assert.match(glyph, /font-size: 18px !important/)
+  assert.match(glyph, /-webkit-text-stroke: 0\.45px currentColor/)
+  assert.match(await rule(`${S} [data-slot='composer-surface'] button:not(:has(span)) > svg`), /width: 18px !important/)
+})
+
+test('the thread leaves 0.8rem above the first message without touching the surface', async () => {
+  const source = await css()
+  assert.ok(!parseRules(source).some(({ selectors }) => selectors.includes(`${S} [data-chat-surface]`)))
+  const spacer = await rule(`${S} [data-slot='aui_thread-content']:has([data-slot='aui_message-group'])::before`)
+  assert.match(spacer, /height: 0\.8rem/)
+  assert.match(spacer, /flex-shrink: 0/)
+})
+
+test('pane tabs keep their geometry and gain a pill behind the active tab', async () => {
+  const tab = `:is([data-slot='pane-tab'], [data-tree-tab]):not([data-vertical])`
+  const base = await rule(`${S} ${tab}`)
+  assert.match(base, /border-left-width: 0 !important/)
+  assert.match(base, /--pane-tab-active-accent: transparent/)
+  assert.doesNotMatch(base, /(^|\s)(height|width|margin[a-z-]*):/, 'the tab box itself must not change size or position')
+
+  const pill = await rule(`${S} ${tab}[data-active='true']::before`)
+  assert.match(pill, /border-radius: 9999px/)
+  assert.match(pill, /pointer-events: none/)
+
+  assert.match(await rule(`${S} ${tab} .pane-tab-content span`), /text-transform: none !important/)
+})
+
+test('pane tab labels capitalize their first letter only', async () => {
+  const body = await rule(`${S} :is([data-slot='pane-tab'], [data-tree-tab]):not([data-vertical]) .pane-tab-content > :last-child > span::first-letter`)
+  assert.match(body, /text-transform: uppercase/)
+})
+
+test('conversation tab dots follow the sidebar rules without padding the lead cell', async () => {
+  const rules = parseRules(await css())
+  const tab = `${S} :is([data-slot='pane-tab'], [data-tree-tab]):not([data-vertical]) .pane-tab-content`
+  assert.ok(rules.some(({ selectors }) => selectors[0] === `${tab} > :where(span, button):last-child`), 'label padding must target only the last child')
+  assert.ok(!rules.some(({ selectors }) => selectors[0] === `${tab} > :where(span, button)`), 'the lead cell must not get label padding')
+  const hidden = rules.find(({ selectors }) => selectors[0].startsWith(`${tab} > span:not(:last-child) span[class~='rounded-full']`))
+  assert.match(hidden.body, /display: none/)
+})
+
+test('conversation tabs match even when a context menu replaces their data-slot', async () => {
+  const pill = parseRules(await css()).find(({ selectors }) => selectors[0].endsWith("[data-active='true']::before"))
+  assert.ok(pill.selectors[0].includes(":is([data-slot='pane-tab'], [data-tree-tab])"))
+})
+
+test('panel header tab strips get 0.5rem inline padding', async () => {
+  assert.match(await rule(`${S} [data-panel-header] [class~='group/pane-header']`), /padding-inline: 0\.5rem !important/)
+})
+
+test('the composer + cross is 17px', async () => {
+  assert.match(await rule(`${S} [data-slot='composer-surface'] button:has(> i.codicon-add)::before`), /width: 17px;\s*height: 17px/)
+})
+
+test('tab close buttons get their width, a one-step inset and a matching label fade', async () => {
+  const tab = ":is([data-slot='pane-tab'], [data-tree-tab]):not([data-vertical])"
+  assert.match(await rule(`${S} ${tab}[data-closeable]`), /--pane-tab-close-width: 1\.5rem/)
+  assert.match(await rule(`${S} ${tab} > span:has(> button > i.codicon-close)`), /right: calc\(var\(--spacing, 0\.25rem\) \* 1\) !important/)
+  assert.match(await rule(`${S} ${tab}[data-closeable]:hover > .pane-tab-content`), /mask-image: linear-gradient/)
+})
+
+
+test('composer SVG icons use a solid stroke with element opacity', async () => {
+  const idle = await rule(`${S} [data-slot='composer-surface'] button:not(:has(span)):not([class*='text-primary']):not([class*='bg-foreground']) > svg[stroke]`)
+  assert.match(idle, /color: var\(--ui-base, currentColor\) !important/)
+  assert.match(idle, /opacity: 0\.54/)
+  const hover = await rule(`${S} [data-slot='composer-surface'] button:not(:has(span)):not([class*='text-primary']):not([class*='bg-foreground']):is(:hover, :focus-visible) > svg[stroke]`)
+  assert.match(hover, /opacity: 0\.94/)
+})
+
+test('the dark voice mode button is near-white with a near-black icon', async () => {
+  const voice = await rule(`${S}[data-hermes-theme='grok-chat'].dark [data-slot='composer-surface'] button[class*='bg-foreground']:not([type='submit'])`)
+  assert.match(voice, /background: var\(--grok-color-voice-button\) !important/)
+  assert.match(voice, /color: var\(--grok-color-voice-icon\) !important/)
+  const dark = await rule(`${S}[data-hermes-theme='grok-chat'].dark`)
+  assert.match(dark, /--grok-color-voice-button: #FAFAFA/)
+  assert.match(dark, /--grok-color-voice-icon: #141414/)
+})
+
+test('tab lead cells collapse only when empty, and icons keep their spacing', async () => {
+  const rules = parseRules(await css())
+  const tab = `${S} :is([data-slot='pane-tab'], [data-tree-tab]):not([data-vertical]) .pane-tab-content > span:not(:last-child)`
+  const empty = rules.find(({ selectors }) => selectors[0].startsWith(tab) && /margin-inline: 0/.test(selectors[0] ? '' : '') || (selectors[0].startsWith(tab) && selectors[0].includes(':has(span[class~=') && selectors[0].includes(':not(:has(span[class~=')))
+  assert.ok(empty, 'expected an empty-lead rule')
+  assert.match(empty.body, /margin-inline: 0 !important/)
+  const filled = rules.find(({ selectors }) => selectors[0].startsWith(tab) && selectors[0].includes(':is(:not(:has('))
+  assert.ok(filled, 'expected a filled-lead rule covering icons as well as visible dots')
+  assert.match(filled.body, /margin-left: 12px !important;\s*margin-right: 2px !important/)
 })

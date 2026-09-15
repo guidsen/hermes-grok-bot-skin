@@ -53,7 +53,7 @@ const GROK_THEME = {
   darkColors: {
     background: '#1C1C1E',
     foreground: '#F5F5F7',
-    card: '#1C1C1E',
+    card: '#2F2F2F',
     cardForeground: '#F5F5F7',
     muted: '#2C2C2E',
     mutedForeground: '#98989D',
@@ -73,8 +73,8 @@ const GROK_THEME = {
     destructiveForeground: '#1C1C1E',
     sidebarBackground: '#232325',
     sidebarBorder: '#2F2F31',
-    userBubble: '#F5F5F7',
-    userBubbleBorder: '#F5F5F7'
+    userBubble: '#5F5F5F',
+    userBubbleBorder: '#5F5F5F'
   },
   typography: {
     fontSans: SYSTEM_FONT,
@@ -134,9 +134,37 @@ const SECTION_LABEL = `span:has(> span.dither[aria-hidden='true'] + span[class~=
    bubble's corner. */
 const USER_ACTIONS = `[data-slot='aui_user-bubble-actions'] .composer-human-message ~ div[class~='absolute'][class~='bottom-2']`
 
+/* Horizontal pane tabs (Sessions/Bots/Terminal, session tabs above the chat).
+   A conversation tab is wrapped in a right-click menu whose trigger passes its
+   own data-slot="context-menu-trigger" onto the tab, replacing "pane-tab". The
+   tab strip also stamps every tab with data-tree-tab, which nothing overrides,
+   so match either. Collapsed side rails render vertical tabs and are left
+   alone. */
+const PANE_TAB = `:is([data-slot='pane-tab'], [data-tree-tab]):not([data-vertical])`
+
+/* Icon-only ghost buttons in the composer: not a toggle in its on state
+   (text-primary) and not a solid filled button such as voice mode
+   (bg-foreground), whose icon is deliberately colored against its fill. */
+const ICON_SVG_BUTTON = `[data-slot='composer-surface'] button:not(:has(span)):not([class*='text-primary']):not([class*='bg-foreground'])`
+
+/* The voice mode button: the solid primary button that is not Send/Stop. */
+const VOICE_BUTTON = `[data-slot='composer-surface'] button[class*='bg-foreground']:not([type='submit'])`
+const ICON_SVG = `${ICON_SVG_BUTTON} > svg[stroke]`
+
+/* A tab's lead cell (before the label) holding only a dot the skin hides, and
+   one holding anything visible. */
+const EMPTY_TAB_LEAD = `span:not(:last-child):has(${QUIET_DOT}):not(:has(${LOUD_DOT}))`
+const FILLED_TAB_LEAD = `span:not(:last-child):is(:not(:has(${QUIET_DOT})), :has(${LOUD_DOT}))`
+
 const SEARCH_INPUT = `input:is([aria-label='Search sessions'], [aria-label='Search bots and group chats'])`
 
-const PLUS_MASK = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 4.5v15M4.5 12h15' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E")`
+/* The composer's + is found by its icon, not its aria-label. Hermes' label is
+   plain text that can be translated; the codicon name is an internal id that
+   stays the same in every language. The Send/Stop button is the composer's
+   only submit button, so it needs no label either. */
+const ADD_BUTTON = `button:has(> i.codicon-add)`
+
+const PLUS_MASK = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 4.5v15M4.5 12h15' fill='none' stroke='black' stroke-width='2.1' stroke-linecap='round'/%3E%3C/svg%3E")`
 
 const MENU_SURFACES = [
   `[data-slot='dropdown-menu-content']`,
@@ -212,6 +240,8 @@ html[data-grok-chat-look='true'] {
   --grok-color-user-pill: var(--dt-user-bubble);
   --grok-color-user-pill-text: var(--grok-color-text);
   --grok-color-composer: var(--grok-color-elevated);
+  --grok-color-add-button: color-mix(in srgb, var(--grok-color-text) 4%, var(--grok-color-composer));
+  --grok-color-tab-active: color-mix(in srgb, var(--grok-color-text) 9%, var(--ui-sidebar-surface-background));
   --grok-color-hover-soft: color-mix(in srgb, var(--grok-color-text) 6%, transparent);
   --grok-color-row-hover: color-mix(in srgb, var(--grok-color-text) 5%, var(--grok-color-sidebar));
   --grok-color-row-active: color-mix(in srgb, var(--grok-color-text) 8%, var(--grok-color-sidebar));
@@ -221,12 +251,14 @@ html[data-grok-chat-look='true'] {
   --grok-status-busy: #34C759;
   --grok-status-waiting: #FF9500;
   --grok-status-waiting-text: #A15C00;
+  --grok-link: #0071E3;
 }
 
 html[data-grok-chat-look='true'].dark {
   --grok-status-busy: #30D158;
   --grok-status-waiting: #FF9F0A;
   --grok-status-waiting-text: #FFB340;
+  --grok-link: #4A90E2;
 }
 
 /* Exact seeds when the bundled theme is active. Hermes blends card and bubble
@@ -238,6 +270,15 @@ html[data-grok-chat-look='true'][data-hermes-theme='grok-chat'] {
   --grok-color-assistant-pill: var(--dt-muted);
   --grok-color-user-pill: var(--theme-bubble-seed);
   --grok-color-user-pill-text: var(--dt-primary-foreground);
+}
+
+/* Dark mode prompts are a mid-gray pill with light text rather than an inverted
+   white one, so the text follows the foreground instead of primaryForeground. */
+html[data-grok-chat-look='true'][data-hermes-theme='grok-chat'].dark {
+  --grok-color-user-pill-text: var(--theme-foreground, var(--grok-color-text));
+  --grok-color-add-button: #3B3B3B;
+  --grok-color-voice-button: #FAFAFA;
+  --grok-color-voice-icon: #141414;
 }
 
 html[data-grok-chat-look='true'][data-hermes-theme='grok-chat']:not([data-hermes-glass]) {
@@ -268,6 +309,18 @@ html[data-grok-chat-look='true'] [contenteditable='true'] {
 html[data-grok-chat-look='true'] [data-slot='aui_thread-viewport'],
 html[data-grok-chat-look='true'] [data-slot='aui_thread-content'] {
   background: var(--grok-color-chat) !important;
+}
+
+/* A little space above the first message. Hermes already pads the thread to
+   clear the titlebar, with a different amount in secondary windows, so add a
+   spacer before the first item instead of overriding that padding. Only while
+   the thread has messages: the empty state reuses this slot as a two-row grid,
+   where an extra item would take a row. */
+html[data-grok-chat-look='true'] [data-slot='aui_thread-content']:has([data-slot='aui_message-group'])::before {
+  content: '';
+  display: block;
+  flex-shrink: 0;
+  height: 0.8rem;
 }
 
 html[data-grok-chat-look='true'] [data-slot='aui_assistant-message-root'],
@@ -349,6 +402,16 @@ html[data-grok-chat-look='true'] [data-slot='aui_user-message-root'] .composer-h
 
 html[data-grok-chat-look='true'] [data-slot='aui_user-message-root'] .composer-human-message :where(span, p, code) {
   color: inherit !important;
+}
+
+html[data-grok-chat-look='true'] [data-slot='aui_user-message-root'] .composer-human-message :where(a, .ref) {
+  color: inherit !important;
+  text-decoration-line: underline !important;
+  text-underline-offset: 2px !important;
+}
+
+html[data-grok-chat-look='true'] [data-slot='aui_user-message-root'] .composer-human-message .ref[data-ref='url'] > svg {
+  display: none !important;
 }
 
 /* Hermes overlays the prompt's hover actions (Stop, Restore checkpoint) in the
@@ -587,6 +650,74 @@ html[data-grok-chat-look='true'] [data-slot='composer-status-stack'] > div[class
   margin-inline: calc(var(--spacing, 0.25rem) * 5) !important;
 }
 
+/* A pasted link becomes an atomic chip showing a shortened label and a link
+   icon. The full URL is kept in data-ref-id, so collapse the chip's own content
+   and print that instead, in plain link blue. Copy and send are unaffected:
+   Hermes serializes the chip from data-ref-text, not from what is displayed. */
+html[data-grok-chat-look='true'] [data-slot='composer-rich-input'] [data-ref-kind='url'] {
+  color: var(--grok-link) !important;
+  font-size: 0 !important;
+}
+
+html[data-grok-chat-look='true'] [data-slot='composer-rich-input'] [data-ref-kind='url']::after {
+  content: attr(data-ref-id);
+  font-size: var(--grok-font-body);
+  overflow-wrap: anywhere;
+}
+
+/* Larger, heavier composer icons. Most are codicon font glyphs sized by an
+   inline font-size, so the size needs !important; the font has no stroke weight
+   to raise, so a text stroke in the glyph's own color thickens the outline. The
+   voice buttons use stroked SVG icons, which are resized and get a heavier
+   stroke. Buttons that also hold text, like the model pill, keep their small
+   chevron. */
+html[data-grok-chat-look='true'] [data-slot='composer-surface'] button i.codicon {
+  font-size: 18px !important;
+  -webkit-text-stroke: 0.45px currentColor;
+}
+
+html[data-grok-chat-look='true'] [data-slot='composer-surface'] button:not(:has(span)) > svg {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+html[data-grok-chat-look='true'] [data-slot='composer-surface'] button svg[stroke] {
+  stroke-width: 2.3;
+}
+
+/* Hermes colors these icon buttons with a translucent tertiary color
+   (the foreground at 54%). A Tabler icon is several strokes that meet and
+   cross, and with a translucent stroke every overlap paints twice, leaving
+   brighter spots at joins and crossings. Draw the strokes in the same
+   foreground at full strength and apply the transparency to the whole icon
+   with opacity, so overlaps can't build up: 54% at rest, 94% on hover like
+   Hermes' hover text. Toggles that are on use Hermes' solid primary color and
+   are left alone. */
+html[data-grok-chat-look='true'] ${ICON_SVG} {
+  color: var(--ui-base, currentColor) !important;
+  opacity: 0.54;
+  transition: opacity 120ms ease;
+}
+
+html[data-grok-chat-look='true'] ${ICON_SVG_BUTTON}:is(:hover, :focus-visible) > svg[stroke] {
+  opacity: 0.94;
+}
+
+html[data-grok-chat-look='true'] ${ICON_SVG_BUTTON}:disabled > svg[stroke] {
+  opacity: 0.36;
+}
+
+/* In dark mode the voice mode button is a near-white circle with a near-black
+   icon. */
+html[data-grok-chat-look='true'][data-hermes-theme='grok-chat'].dark ${VOICE_BUTTON} {
+  background: var(--grok-color-voice-button) !important;
+  color: var(--grok-color-voice-icon) !important;
+}
+
+html[data-grok-chat-look='true'][data-hermes-theme='grok-chat'].dark ${VOICE_BUTTON}:hover {
+  background: color-mix(in srgb, var(--grok-color-voice-icon) 8%, var(--grok-color-voice-button)) !important;
+}
+
 /* Hermes gives the field a 2.375rem floor; let the controls and input set the
    height instead. */
 html[data-grok-chat-look='true'] [data-slot='composer-fade'] {
@@ -616,13 +747,13 @@ html[data-grok-chat-look='true'] [data-slot='composer-surface'] [data-slot='comp
 
 /* The + sits in the menu grid area. Size it like the send button so both ends
    of the field match. */
-html[data-grok-chat-look='true'] [data-slot='composer-surface'] button[aria-label='Add context'] {
+html[data-grok-chat-look='true'] [data-slot='composer-surface'] ${ADD_BUTTON} {
   position: relative !important;
   width: var(--composer-control-primary-size, var(--composer-control-size)) !important;
   height: var(--composer-control-primary-size, var(--composer-control-size)) !important;
   border: 1px solid color-mix(in srgb, var(--grok-color-text) 12%, transparent) !important;
   border-radius: 9999px !important;
-  background: color-mix(in srgb, var(--grok-color-text) 4%, var(--grok-color-composer)) !important;
+  background: var(--grok-color-add-button) !important;
   color: var(--grok-color-text-secondary) !important;
 }
 
@@ -645,21 +776,21 @@ html[data-grok-chat-look='true'] [data-slot='composer-surface'] [class*='"input_
   padding-left: calc(var(--spacing, 0.25rem) * 0.8) !important;
 }
 
-html[data-grok-chat-look='true'] [data-slot='composer-surface'] button[aria-label='Add context']:hover {
+html[data-grok-chat-look='true'] [data-slot='composer-surface'] ${ADD_BUTTON}:hover {
   background: color-mix(in srgb, var(--grok-color-text) 8%, var(--grok-color-composer)) !important;
   color: var(--grok-color-text) !important;
 }
 
-html[data-grok-chat-look='true'] [data-slot='composer-surface'] button[aria-label='Add context'] > * {
+html[data-grok-chat-look='true'] [data-slot='composer-surface'] ${ADD_BUTTON} > * {
   visibility: hidden !important;
 }
 
-html[data-grok-chat-look='true'] [data-slot='composer-surface'] button[aria-label='Add context']::before {
+html[data-grok-chat-look='true'] [data-slot='composer-surface'] ${ADD_BUTTON}::before {
   content: '';
   position: absolute;
   inset: 0;
-  width: 12px;
-  height: 12px;
+  width: 17px;
+  height: 17px;
   margin: auto;
   background: currentColor;
   -webkit-mask: ${PLUS_MASK} center / contain no-repeat;
@@ -675,10 +806,122 @@ html[data-grok-chat-look='true'] [data-slot='composer-surface'] :is(button[aria-
   background: var(--grok-color-hover-soft) !important;
 }
 
-html[data-grok-chat-look='true'] [data-slot='composer-surface'] :is(button[aria-label='Send'], button[aria-label='Stop']) {
+html[data-grok-chat-look='true'] [data-slot='composer-surface'] button[type='submit'] {
   width: 26px !important;
   height: 26px !important;
   border-radius: 9999px !important;
+}
+
+/* ---------------------------------------------------------------- pane tabs */
+
+/* Hermes' tabs are full-height cells with tiny spaced uppercase labels, divider
+   lines and a primary-color underline on the active tab. Keep every tab's
+   geometry exactly as it is, so clicking, dragging, dropping between zones and
+   the titlebar drag regions behave the same, and only change the paint: no
+   dividers or underline, sentence-case labels, and a soft pill drawn behind
+   the active tab. The pill is a pseudo-element outside .pane-tab-content, so
+   the close button's label mask never fades it. */
+html[data-grok-chat-look='true'] ${PANE_TAB} {
+  --pane-tab-active-accent: transparent;
+  --pane-tab-active-bg: transparent;
+  border-left-width: 0 !important;
+  box-shadow: none !important;
+  isolation: isolate;
+}
+
+html[data-grok-chat-look='true'] ${PANE_TAB}[data-active='true']::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  right: 2px;
+  left: 2px;
+  height: 26px;
+  margin-top: -13px;
+  border-radius: 9999px;
+  background: var(--grok-color-tab-active);
+  pointer-events: none;
+}
+
+/* The label is always the last child of the tab content. Session tabs put a
+   lead cell with their status dot in front of it, which keeps its own spacing. */
+html[data-grok-chat-look='true'] ${PANE_TAB} .pane-tab-content > :where(span, button):last-child {
+  padding-inline: 12px !important;
+}
+
+/* Hermes names built-in panes in lowercase ("sessions", "terminal") and relied
+   on uppercase styling. Capitalize only the first letter, so conversation
+   titles keep their own casing. The label text span is a block, so
+   ::first-letter applies. */
+html[data-grok-chat-look='true'] ${PANE_TAB} .pane-tab-content > :last-child > span::first-letter {
+  text-transform: uppercase;
+}
+
+/* Conversation tabs follow the sidebar's dot rules: the uncolored idle dot and
+   the draft ring are hidden, and the lead cell collapses to nothing. A session
+   color or a live state keeps its dot, sitting close to the title. */
+html[data-grok-chat-look='true'] ${PANE_TAB} .pane-tab-content > span:not(:last-child) ${QUIET_DOT} {
+  display: none !important;
+}
+
+/* A lead cell is empty only when all it holds is a dot the skin hid. Collapse
+   that one so the title lines up with other tabs. Any other lead, a visible
+   dot or an icon such as a browser tab's globe or favicon, keeps room on its
+   left and sits close to the title. */
+html[data-grok-chat-look='true'] ${PANE_TAB} .pane-tab-content > ${EMPTY_TAB_LEAD} {
+  margin-inline: 0 !important;
+}
+
+html[data-grok-chat-look='true'] ${PANE_TAB} .pane-tab-content > ${FILLED_TAB_LEAD} {
+  margin-left: 12px !important;
+  margin-right: 2px !important;
+}
+
+html[data-grok-chat-look='true'] ${PANE_TAB} .pane-tab-content > ${FILLED_TAB_LEAD} + :where(span, button):last-child {
+  padding-left: 3px !important;
+}
+
+html[data-grok-chat-look='true'] ${PANE_TAB} .pane-tab-content span {
+  font-family: ${SYSTEM_FONT} !important;
+  font-size: var(--grok-font-meta) !important;
+  font-weight: 500 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+}
+
+/* Close button on closeable tabs. Hermes sizes it and fades the label under
+   it with [data-slot='pane-tab'][data-closeable], which conversation tabs miss
+   because their menu trigger replaced that data-slot, so their ✕ had no width
+   and sat flush against the edge. Restore the width for every closeable tab,
+   move the ✕ in by one spacing step, and extend the label fade by the same
+   amount so no text shows beside the button. The wrapper is found by the
+   close icon it holds, not by its utility classes. */
+html[data-grok-chat-look='true'] ${PANE_TAB}[data-closeable] {
+  --pane-tab-close-width: 1.5rem;
+}
+
+html[data-grok-chat-look='true'] ${PANE_TAB} > span:has(> button > i.codicon-close) {
+  right: calc(var(--spacing, 0.25rem) * 1) !important;
+}
+
+html[data-grok-chat-look='true'] ${PANE_TAB}[data-closeable]:hover > .pane-tab-content {
+  -webkit-mask-image: linear-gradient(
+    to right,
+    #000 calc(100% - var(--pane-tab-close-width) - var(--spacing, 0.25rem) - 1rem),
+    transparent calc(100% - var(--pane-tab-close-width) - var(--spacing, 0.25rem))
+  ) !important;
+  mask-image: linear-gradient(
+    to right,
+    #000 calc(100% - var(--pane-tab-close-width) - var(--spacing, 0.25rem) - 1rem),
+    transparent calc(100% - var(--pane-tab-close-width) - var(--spacing, 0.25rem))
+  ) !important;
+}
+
+/* Inset the tab strip inside each panel header so the first pill does not sit
+   against the zone edge. Descendant rather than child: a zone menu may wrap
+   the strip. */
+html[data-grok-chat-look='true'] [data-panel-header] [class~='group/pane-header'] {
+  padding-inline: 0.5rem !important;
 }
 
 /* ------------------------------------------------------------------- popups */
