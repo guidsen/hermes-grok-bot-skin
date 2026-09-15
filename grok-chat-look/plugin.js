@@ -784,8 +784,38 @@ html[data-grok-chat-look='true'] ${PANE_TAB}[data-active='true']::before {
   pointer-events: none;
 }
 
-html[data-grok-chat-look='true'] ${PANE_TAB} .pane-tab-content > :where(span, button) {
+/* The label is always the last child of the tab content. Session tabs put a
+   lead cell with their status dot in front of it, which keeps its own spacing. */
+html[data-grok-chat-look='true'] ${PANE_TAB} .pane-tab-content > :where(span, button):last-child {
   padding-inline: 12px !important;
+}
+
+/* Hermes names built-in panes in lowercase ("sessions", "terminal") and relied
+   on uppercase styling. Capitalize only the first letter, so conversation
+   titles keep their own casing. The label text span is a block, so
+   ::first-letter applies. */
+html[data-grok-chat-look='true'] ${PANE_TAB} .pane-tab-content > :last-child > span::first-letter {
+  text-transform: uppercase;
+}
+
+/* Conversation tabs follow the sidebar's dot rules: the uncolored idle dot and
+   the draft ring are hidden, and the lead cell collapses to nothing. A session
+   color or a live state keeps its dot, sitting close to the title. */
+html[data-grok-chat-look='true'] ${PANE_TAB} .pane-tab-content > span:not(:last-child) ${QUIET_DOT} {
+  display: none !important;
+}
+
+html[data-grok-chat-look='true'] ${PANE_TAB} .pane-tab-content > span:not(:last-child):not(:has(${LOUD_DOT})) {
+  margin-inline: 0 !important;
+}
+
+html[data-grok-chat-look='true'] ${PANE_TAB} .pane-tab-content > span:not(:last-child):has(${LOUD_DOT}) {
+  margin-left: 12px !important;
+  margin-right: 0 !important;
+}
+
+html[data-grok-chat-look='true'] ${PANE_TAB} .pane-tab-content > span:has(${LOUD_DOT}) + :where(span, button):last-child {
+  padding-left: 3px !important;
 }
 
 html[data-grok-chat-look='true'] ${PANE_TAB} .pane-tab-content span {

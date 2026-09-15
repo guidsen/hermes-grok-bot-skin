@@ -360,3 +360,17 @@ test('pane tabs keep their geometry and gain a pill behind the active tab', asyn
 
   assert.match(await rule(`${S} ${tab} .pane-tab-content span`), /text-transform: none !important/)
 })
+
+test('pane tab labels capitalize their first letter only', async () => {
+  const body = await rule(`${S} [data-slot='pane-tab']:not([data-vertical]) .pane-tab-content > :last-child > span::first-letter`)
+  assert.match(body, /text-transform: uppercase/)
+})
+
+test('conversation tab dots follow the sidebar rules without padding the lead cell', async () => {
+  const rules = parseRules(await css())
+  const tab = `${S} [data-slot='pane-tab']:not([data-vertical]) .pane-tab-content`
+  assert.ok(rules.some(({ selectors }) => selectors[0] === `${tab} > :where(span, button):last-child`), 'label padding must target only the last child')
+  assert.ok(!rules.some(({ selectors }) => selectors[0] === `${tab} > :where(span, button)`), 'the lead cell must not get label padding')
+  const hidden = rules.find(({ selectors }) => selectors[0].startsWith(`${tab} > span:not(:last-child) span[class~='rounded-full']`))
+  assert.match(hidden.body, /display: none/)
+})
