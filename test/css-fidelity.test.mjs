@@ -19,7 +19,7 @@ test('colors resolve through tokens; only semantic status colors are literal', a
     for (const declaration of body.split(';')) {
       if (!/#[0-9a-fA-F]{3,8}\b/.test(declaration)) continue
       if (/url\("data:/.test(declaration)) continue
-      assert.match(declaration.trim(), /^--grok-status-/, `hardcoded color outside a status token: ${declaration.trim()}`)
+      assert.match(declaration.trim(), /^--grok-(status-|link:)/, `hardcoded color outside a status or link token: ${declaration.trim()}`)
     }
   }
 })
@@ -314,4 +314,13 @@ test('tool blocks use a 0.7rem corner', async () => {
 
 test('the prompt text wrapper has no minimum height', async () => {
   assert.match(await rule(`${S} div[class~='min-h-[1.25rem]']:has(> [data-slot='aui_user-message-text'])`), /min-height: 0 !important/)
+})
+
+test('dark prompt pills use light text', async () => {
+  assert.match(await rule(`${S}[data-hermes-theme='grok-chat'].dark`), /--grok-color-user-pill-text: var\(--theme-foreground/)
+})
+
+test('composer links show the full URL in link blue without the chip icon', async () => {
+  assert.match(await rule(`${S} [data-slot='composer-rich-input'] [data-ref-kind='url']`), /font-size: 0 !important/)
+  assert.match(await rule(`${S} [data-slot='composer-rich-input'] [data-ref-kind='url']::after`), /content: attr\(data-ref-id\)/)
 })

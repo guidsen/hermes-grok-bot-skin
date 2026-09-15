@@ -53,7 +53,7 @@ const GROK_THEME = {
   darkColors: {
     background: '#1C1C1E',
     foreground: '#F5F5F7',
-    card: '#1C1C1E',
+    card: '#2F2F2F',
     cardForeground: '#F5F5F7',
     muted: '#2C2C2E',
     mutedForeground: '#98989D',
@@ -73,8 +73,8 @@ const GROK_THEME = {
     destructiveForeground: '#1C1C1E',
     sidebarBackground: '#232325',
     sidebarBorder: '#2F2F31',
-    userBubble: '#F5F5F7',
-    userBubbleBorder: '#F5F5F7'
+    userBubble: '#5F5F5F',
+    userBubbleBorder: '#5F5F5F'
   },
   typography: {
     fontSans: SYSTEM_FONT,
@@ -221,12 +221,14 @@ html[data-grok-chat-look='true'] {
   --grok-status-busy: #34C759;
   --grok-status-waiting: #FF9500;
   --grok-status-waiting-text: #A15C00;
+  --grok-link: #0071E3;
 }
 
 html[data-grok-chat-look='true'].dark {
   --grok-status-busy: #30D158;
   --grok-status-waiting: #FF9F0A;
   --grok-status-waiting-text: #FFB340;
+  --grok-link: #4A90E2;
 }
 
 /* Exact seeds when the bundled theme is active. Hermes blends card and bubble
@@ -238,6 +240,12 @@ html[data-grok-chat-look='true'][data-hermes-theme='grok-chat'] {
   --grok-color-assistant-pill: var(--dt-muted);
   --grok-color-user-pill: var(--theme-bubble-seed);
   --grok-color-user-pill-text: var(--dt-primary-foreground);
+}
+
+/* Dark mode prompts are a mid-gray pill with light text rather than an inverted
+   white one, so the text follows the foreground instead of primaryForeground. */
+html[data-grok-chat-look='true'][data-hermes-theme='grok-chat'].dark {
+  --grok-color-user-pill-text: var(--theme-foreground, var(--grok-color-text));
 }
 
 html[data-grok-chat-look='true'][data-hermes-theme='grok-chat']:not([data-hermes-glass]) {
@@ -349,6 +357,16 @@ html[data-grok-chat-look='true'] [data-slot='aui_user-message-root'] .composer-h
 
 html[data-grok-chat-look='true'] [data-slot='aui_user-message-root'] .composer-human-message :where(span, p, code) {
   color: inherit !important;
+}
+
+html[data-grok-chat-look='true'] [data-slot='aui_user-message-root'] .composer-human-message :where(a, .ref) {
+  color: inherit !important;
+  text-decoration-line: underline !important;
+  text-underline-offset: 2px !important;
+}
+
+html[data-grok-chat-look='true'] [data-slot='aui_user-message-root'] .composer-human-message .ref[data-ref='url'] > svg {
+  display: none !important;
 }
 
 /* Hermes overlays the prompt's hover actions (Stop, Restore checkpoint) in the
@@ -585,6 +603,21 @@ html[data-grok-chat-look='true'] [data-slot='composer-surface'] > [aria-hidden] 
    rounder, so inset it further to clear the curved corners below it. */
 html[data-grok-chat-look='true'] [data-slot='composer-status-stack'] > div[class~='mx-2'] {
   margin-inline: calc(var(--spacing, 0.25rem) * 5) !important;
+}
+
+/* A pasted link becomes an atomic chip showing a shortened label and a link
+   icon. The full URL is kept in data-ref-id, so collapse the chip's own content
+   and print that instead, in plain link blue. Copy and send are unaffected:
+   Hermes serializes the chip from data-ref-text, not from what is displayed. */
+html[data-grok-chat-look='true'] [data-slot='composer-rich-input'] [data-ref-kind='url'] {
+  color: var(--grok-link) !important;
+  font-size: 0 !important;
+}
+
+html[data-grok-chat-look='true'] [data-slot='composer-rich-input'] [data-ref-kind='url']::after {
+  content: attr(data-ref-id);
+  font-size: var(--grok-font-body);
+  overflow-wrap: anywhere;
 }
 
 /* Hermes gives the field a 2.375rem floor; let the controls and input set the

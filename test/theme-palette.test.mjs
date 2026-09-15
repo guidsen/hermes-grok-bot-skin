@@ -36,14 +36,15 @@ test('light mode matches the Grok Bot screenshots', async () => {
   assert.notEqual(colors.sidebarBackground, colors.background, 'sidebar is tinted, not flat')
 })
 
-test('the user pill inverts in both modes', async () => {
+test('the prompt pill is inverted in light mode and gray in dark mode', async () => {
   const { internals } = await loadPlugin(['GROK_THEME'])
   const { colors, darkColors } = internals.GROK_THEME
 
-  // The pill paints the bubble seed with primaryForeground text, so primary and
-  // userBubble must agree or the text loses contrast.
+  // Light: black pill with primaryForeground text, so they must agree.
   assert.equal(colors.userBubble, colors.primary)
-  assert.equal(darkColors.userBubble, darkColors.primary)
+  // Dark: a mid-gray pill with light foreground text, and a #2F2F2F composer.
+  assert.equal(darkColors.userBubble, '#5F5F5F')
+  assert.equal(darkColors.card, '#2F2F2F')
 })
 
 test('typography uses the macOS system stack', async () => {
