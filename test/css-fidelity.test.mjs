@@ -21,7 +21,7 @@ test('colors resolve through tokens; only semantic status colors are literal', a
       if (/url\("data:/.test(declaration)) continue
       // Mask gradients use black purely as an alpha channel, not as a color.
       if (/^\s*(-webkit-)?mask(-image)?:/.test(declaration)) continue
-      assert.match(declaration.trim(), /^--grok-(status-|link:|color-add-button:)/, `hardcoded color outside an allowed token: ${declaration.trim()}`)
+      assert.match(declaration.trim(), /^--grok-(status-|link:|color-add-button:|color-voice-(button|icon):)/, `hardcoded color outside an allowed token: ${declaration.trim()}`)
     }
   }
 })
@@ -414,8 +414,11 @@ test('composer SVG icons use a solid stroke with element opacity', async () => {
   assert.match(hover, /opacity: 0\.94/)
 })
 
-test('the dark voice mode button is gray with a white icon and solid buttons skip icon opacity', async () => {
+test('the dark voice mode button is near-white with a near-black icon', async () => {
   const voice = await rule(`${S}[data-hermes-theme='grok-chat'].dark [data-slot='composer-surface'] button[class*='bg-foreground']:not([type='submit'])`)
-  assert.match(voice, /background: var\(--grok-color-add-button\) !important/)
-  assert.match(voice, /color: var\(--ui-base/)
+  assert.match(voice, /background: var\(--grok-color-voice-button\) !important/)
+  assert.match(voice, /color: var\(--grok-color-voice-icon\) !important/)
+  const dark = await rule(`${S}[data-hermes-theme='grok-chat'].dark`)
+  assert.match(dark, /--grok-color-voice-button: #FAFAFA/)
+  assert.match(dark, /--grok-color-voice-icon: #141414/)
 })

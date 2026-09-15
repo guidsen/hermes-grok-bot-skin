@@ -272,6 +272,8 @@ html[data-grok-chat-look='true'][data-hermes-theme='grok-chat'] {
 html[data-grok-chat-look='true'][data-hermes-theme='grok-chat'].dark {
   --grok-color-user-pill-text: var(--theme-foreground, var(--grok-color-text));
   --grok-color-add-button: #3B3B3B;
+  --grok-color-voice-button: #FAFAFA;
+  --grok-color-voice-icon: #141414;
 }
 
 html[data-grok-chat-look='true'][data-hermes-theme='grok-chat']:not([data-hermes-glass]) {
@@ -700,15 +702,15 @@ html[data-grok-chat-look='true'] ${ICON_SVG_BUTTON}:disabled > svg[stroke] {
   opacity: 0.36;
 }
 
-/* In dark mode the voice mode button is a gray circle with a white icon, like
-   the + button, rather than Hermes' white circle. Send keeps its white fill. */
+/* In dark mode the voice mode button is a near-white circle with a near-black
+   icon. */
 html[data-grok-chat-look='true'][data-hermes-theme='grok-chat'].dark ${VOICE_BUTTON} {
-  background: var(--grok-color-add-button) !important;
-  color: var(--ui-base, var(--grok-color-text)) !important;
+  background: var(--grok-color-voice-button) !important;
+  color: var(--grok-color-voice-icon) !important;
 }
 
 html[data-grok-chat-look='true'][data-hermes-theme='grok-chat'].dark ${VOICE_BUTTON}:hover {
-  background: color-mix(in srgb, var(--ui-base, var(--grok-color-text)) 8%, var(--grok-color-add-button)) !important;
+  background: color-mix(in srgb, var(--grok-color-voice-icon) 8%, var(--grok-color-voice-button)) !important;
 }
 
 /* Hermes gives the field a 2.375rem floor; let the controls and input set the
